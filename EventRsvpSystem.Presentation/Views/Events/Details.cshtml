@@ -1,0 +1,81 @@
+@model EventRsvpSystem.Presentation.Controllers.EventDetailsViewModel
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="row mb-4">
+    <div class="col-12 col-md-8">
+        <h1 class="display-5 fw-semibold mb-1">@Model.Name</h1>
+        <p class="text-muted mb-0">@Model.Date.ToString("dddd, MMM d yyyy h:mm tt")</p>
+    </div>
+    <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+        <span class="badge rounded-pill @(Model.IsFull ? "bg-danger" : "bg-success") fs-6">
+            @if (Model.IsFull)
+            {
+                @:Event full (@Model.RsvpCount / @Model.Capacity)
+            }
+            else
+            {
+                @:@Model.RsvpCount / @Model.Capacity spots filled
+            }
+        </span>
+    </div>
+</div>
+
+@if (TempData["RsvpError"] is string errorMessage)
+{
+    <div class="alert alert-danger shadow-sm">@errorMessage</div>
+}
+
+@if (TempData["RsvpSuccess"] is string successMessage)
+{
+    <div class="alert alert-success shadow-sm">@successMessage</div>
+}
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <h2 class="h5 mb-3">Event details</h2>
+        <dl class="row mb-0">
+            <dt class="col-sm-3 text-muted">Date & time</dt>
+            <dd class="col-sm-9">@Model.Date.ToString("f")</dd>
+
+            <dt class="col-sm-3 text-muted">Capacity</dt>
+            <dd class="col-sm-9">@Model.Capacity</dd>
+
+            <dt class="col-sm-3 text-muted">RSVPs</dt>
+            <dd class="col-sm-9">@Model.RsvpCount</dd>
+        </dl>
+    </div>
+</div>
+
+<div class="d-flex align-items-center justify-content-between">
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to events
+    </a>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        using (Html.BeginForm("Rsvp", "Events", new { id = Model.Id }, FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+
+            if (Model.IsFull)
+            {
+                <button type="submit" class="btn btn-secondary" disabled>Event full</button>
+            }
+            else if (Model.HasUserRsvped)
+            {
+                <button type="submit" class="btn btn-outline-success" disabled>Already RSVPed</button>
+            }
+            else
+            {
+                <button type="submit" class="btn btn-primary">RSVP to this event</button>
+            }
+        }
+    }
+    else
+    {
+        <span class="text-muted">Log in to RSVP to this event.</span>
+    }
+</div>
